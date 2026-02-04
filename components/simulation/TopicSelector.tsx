@@ -23,6 +23,7 @@ export function TopicSelector({
 }) {
   const { topics, isLoading, error } = useOsceTopics();
   const [selected, setSelected] = useState<string | null>(null);
+  const [customTopic, setCustomTopic] = useState<string>("");
 
   if (error) {
     return (
@@ -49,7 +50,7 @@ export function TopicSelector({
           : topics.map((topic) => (
               <button
                 key={topic.id}
-                onClick={() => setSelected(topic.id)}
+                onClick={() => { setSelected(topic.id); setCustomTopic(""); }}
                 disabled={isStarting}
                 aria-label={`Select ${topic.name}`}
                 className={`text-left rounded-lg border p-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/40 ${
@@ -69,10 +70,38 @@ export function TopicSelector({
             ))}
       </div>
 
-      {selected && (
+      <div className="relative flex items-center py-2">
+        <div className="flex-grow border-t border-gray-300 dark:border-gray-700" />
+        <span className="mx-4 text-sm text-gray-400 dark:text-gray-500 shrink-0">or</span>
+        <div className="flex-grow border-t border-gray-300 dark:border-gray-700" />
+      </div>
+
+      <div>
+        <label
+          htmlFor="custom-scenario"
+          className="block text-sm font-medium mb-2"
+        >
+          Describe your own scenario
+        </label>
+        <textarea
+          id="custom-scenario"
+          aria-label="Custom scenario description"
+          rows={3}
+          disabled={isStarting}
+          placeholder="e.g. A 52-year-old construction worker with chronic lower back pain after 20 years of manual handling..."
+          value={customTopic}
+          onChange={(e) => {
+            setCustomTopic(e.target.value);
+            setSelected(null);
+          }}
+          className="w-full rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 disabled:opacity-50 resize-y"
+        />
+      </div>
+
+      {(selected || customTopic.trim()) && (
         <div className="flex justify-center">
           <Button
-            onClick={() => onSelect(selected)}
+            onClick={() => onSelect(selected || customTopic.trim())}
             isLoading={isStarting}
             className="px-8"
           >
