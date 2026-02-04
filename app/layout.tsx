@@ -15,7 +15,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "OccuMed AI",
+  title: "HazardGPT",
   description: "AI-powered occupational medicine training platform",
 };
 

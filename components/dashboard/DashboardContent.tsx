@@ -17,7 +17,7 @@ export function DashboardContent() {
         <div>
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Welcome to OccuMed AI - Your occupational medicine training platform
+            Welcome to HazardGPT - Your occupational medicine training platform
           </p>
         </div>
         <div className="flex gap-3">

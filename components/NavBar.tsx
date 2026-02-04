@@ -17,7 +17,7 @@ export function NavBar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           <Link href="/" className="text-xl font-bold text-blue-600 dark:text-blue-400">
-            OccuMed AI
+            HazardGPT
           </Link>
 
           {/* Desktop links */}
