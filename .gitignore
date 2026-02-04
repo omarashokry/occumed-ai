@@ -27,6 +27,20 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env
+
+# PDF data (local ingestion only)
+/data/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Supabase temp
+supabase/.temp/
+
+# local-tools build artifacts
+local-tools/.next/
 
 # vercel
 .vercel
