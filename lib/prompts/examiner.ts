@@ -79,6 +79,12 @@ Grade the consultation and return a JSON object with this exact structure:
   ]
 }
 
+Grade according to the OMST 2022 Curriculum Learning Outcomes framework. The four grading categories map to OMST domains as follows:
+- history_taking → OMST LO3 (Clinical Practice: assess and manage workers re: work and workplace)
+- clinical_knowledge → OMST LO4 (Workplace Risk: identify, assess and manage hazards) + LO5 (Health Promotion)
+- legal_regulatory → OMST LO1 (Professional Values) + LO7 (Worker Safety)
+- communication → OMST LO2 (Communication with workers, employers, colleagues)
+
 GRADING RULES:
 1. Use the clinical_checklist, legal_checklist, and communication_checklist from the scenario to create the items arrays.
 2. For each checklist item, determine if the candidate addressed it based on the transcript.
@@ -88,7 +94,8 @@ GRADING RULES:
 6. Otherwise, overall_outcome is "PASS" if overall_percentage >= 50, "FAIL" if below.
 7. overall_percentage is a weighted average: history_taking (25%), clinical_knowledge (30%), legal_regulatory (25%), communication (20%).
 8. The annotated_transcript should include the full conversation with examiner annotations highlighting good practice, missed opportunities, or errors.
-9. Be fair but rigorous — this is a professional examination.
+9. Be fair but rigorous — this is a professional examination aligned to OMST 2022 Curriculum standards.
 10. The citation should reference the specific regulation from the regulatory context that is most relevant.
-11. Annotations should be educational — explain WHY something was good or bad.`;
+11. Annotations should be educational — explain WHY something was good or bad, referencing OMST curriculum expectations where relevant.
+12. In feedback_summary, note which OMST Learning Outcomes the candidate demonstrated well and which need further development.`;
 }

@@ -39,6 +39,21 @@ Generate a complete OSCE scenario as a JSON object with this exact structure:
   "required_citation": "string — the specific regulation or guidance document section that must be referenced"
 }
 
+The scenario MUST align with the OMST 2022 Curriculum Learning Outcomes. The 11 curriculum domains are:
+1. Professional values and behaviours
+2. Communication (verbal and written with workers, employers, colleagues)
+3. Clinical practice (assess and manage workers re: work and workplace)
+4. Workplace risk (identify, assess and manage hazards)
+5. Health promotion and illness prevention
+6. Leadership and teamworking
+7. Patient (worker) safety
+8. Quality improvement
+9. Safeguarding
+10. Education and training
+11. Research
+
+Each scenario should primarily test domains 2, 3, and 4 (communication, clinical practice, workplace risk) while naturally incorporating domain 1 (professionalism) and domain 7 (worker safety). Indicate which OMST domains the scenario targets.
+
 Rules:
 1. The scenario MUST be grounded in the provided regulatory context — cite specific regulation numbers.
 2. The hidden agenda must include at least 2 undisclosed symptoms and 2 gatekeeper rules.
@@ -47,5 +62,6 @@ Rules:
 5. The communication checklist should have 3-5 items.
 6. The door note should NOT reveal the hidden agenda or the full clinical picture.
 7. The safety_critical_fail_trigger must be something clinically significant that a competent occupational physician would not miss.
-8. Make the scenario realistic — use common UK industries and occupations.`;
+8. Make the scenario realistic — use common UK industries and occupations.
+9. Map scenario checklist items to specific OMST 2022 Learning Outcomes where applicable.`;
 }

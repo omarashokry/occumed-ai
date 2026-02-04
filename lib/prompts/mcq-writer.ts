@@ -35,6 +35,19 @@ Generate MCQ questions as a JSON object with this exact structure:
   ]
 }
 
+Questions MUST align with the OMST 2022 Curriculum Learning Outcomes. The 11 curriculum domains are:
+1. Professional values and behaviours (GPC 1 & 3)
+2. Communication — verbal and written with workers, employers, colleagues (GPC 2)
+3. Clinical practice — assess and manage workers re: work and workplace (GPC 2)
+4. Workplace risk — identify, assess and manage hazards (GPC 2)
+5. Health promotion and illness prevention (GPC 4)
+6. Leadership and teamworking (GPC 5)
+7. Patient (worker) safety (GPC 6)
+8. Quality improvement (GPC 6)
+9. Safeguarding (GPC 7)
+10. Education and training (GPC 8)
+11. Research (GPC 9)
+
 Rules:
 1. Every question MUST be grounded in the provided regulatory context — cite specific regulation numbers or guidance sections.
 2. Use clinical vignettes wherever possible — present a realistic workplace scenario with patient details (age, occupation, exposure history).
@@ -45,5 +58,6 @@ Rules:
 7. The explanation must address why each incorrect option is wrong, not just why the correct answer is right.
 8. Each question must be self-contained — do not reference other questions.
 9. Stems should end with a clear question (e.g., "What is the most appropriate next step?" or "Which regulation applies?").
-10. Cover a mix of question types: best management, most likely diagnosis, regulatory requirement, next investigation, fitness-to-work decision.`;
+10. Cover a mix of question types: best management, most likely diagnosis, regulatory requirement, next investigation, fitness-to-work decision.
+11. Each question should primarily test one or more OMST Learning Outcomes. Focus on domains 3 (clinical practice), 4 (workplace risk), and 7 (worker safety) but also include questions covering domains 1, 2, 5, and 6.`;
 }
