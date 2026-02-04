@@ -206,6 +206,51 @@ export async function endSession(
 }
 
 /**
+ * Get session data + messages for resuming an in-progress session.
+ */
+export async function getSessionForResume(
+  sessionId: string
+): Promise<{
+  sessionId: string;
+  doorNote: string;
+  messages: { role: 'user' | 'assistant'; content: string }[];
+} | null> {
+  const supabase = createServerClient();
+
+  const { data: session, error: sessionError } = await supabase
+    .from('osce_sessions')
+    .select('id, scenario_json, overall_outcome')
+    .eq('id', sessionId)
+    .single();
+
+  if (sessionError || !session) return null;
+
+  // Already completed — nothing to resume
+  if (session.overall_outcome) return null;
+
+  const scenario = session.scenario_json as ScenarioConfig;
+
+  const { data: messages, error: messagesError } = await supabase
+    .from('osce_messages')
+    .select('role, content')
+    .eq('session_id', sessionId)
+    .order('created_at', { ascending: true });
+
+  if (messagesError) {
+    throw new Error(`Failed to read messages: ${messagesError.message}`);
+  }
+
+  return {
+    sessionId: session.id,
+    doorNote: scenario.door_note,
+    messages: (messages || []).map((m) => ({
+      role: m.role as 'user' | 'assistant',
+      content: m.content,
+    })),
+  };
+}
+
+/**
  * Get the feedback/scorecard for a completed session.
  */
 export async function getFeedback(

@@ -47,6 +47,32 @@ export function useOsceSession() {
     []
   );
 
+  const resumeSession = useCallback(async (id: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/osce/${id}/resume`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to load session");
+      }
+      const data = await res.json();
+      setSessionId(data.sessionId);
+      setDoorNote(data.doorNote);
+      setMessages(
+        data.messages.map((m: { role: string; content: string }) => ({
+          role: m.role as "user" | "assistant",
+          content: m.content,
+        }))
+      );
+      setPhase(data.messages.length > 0 ? "chat" : "door-note");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const sendMessage = useCallback(
     async (message: string) => {
       if (!sessionId || isSending) return;
@@ -124,6 +150,7 @@ export function useOsceSession() {
     isSending,
     error,
     startSession,
+    resumeSession,
     sendMessage,
     endSession,
     reset,

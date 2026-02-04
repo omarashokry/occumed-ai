@@ -52,16 +52,14 @@ export function RecentSessions({
                 {sessions.map((s) => (
                   <tr
                     key={s.id}
-                    onClick={
-                      s.overall_outcome
-                        ? () => router.push(`/simulation?session=${s.id}`)
-                        : undefined
+                    onClick={() =>
+                      router.push(
+                        s.overall_outcome
+                          ? `/simulation?session=${s.id}`
+                          : `/simulation?resume=${s.id}`
+                      )
                     }
-                    className={`border-b border-gray-100 dark:border-gray-800/50${
-                      s.overall_outcome
-                        ? " cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                        : ""
-                    }`}
+                    className="border-b border-gray-100 dark:border-gray-800/50 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                   >
                     <td className="py-3">{s.topic}</td>
                     <td className="py-3">

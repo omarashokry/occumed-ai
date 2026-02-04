@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useOsceSession } from "@/hooks/useOsceSession";
 import { TopicSelector } from "./TopicSelector";
@@ -12,7 +13,16 @@ export function SimulationRoom() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const reviewSessionId = searchParams.get("session");
+  const resumeId = searchParams.get("resume");
   const session = useOsceSession();
+  const resumedRef = useRef(false);
+
+  useEffect(() => {
+    if (resumeId && !resumedRef.current) {
+      resumedRef.current = true;
+      session.resumeSession(resumeId);
+    }
+  }, [resumeId, session]);
 
   if (reviewSessionId) {
     return (
