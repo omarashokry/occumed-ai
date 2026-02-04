@@ -1,13 +1,29 @@
 "use client";
 
+import { useSearchParams, useRouter } from "next/navigation";
 import { useOsceSession } from "@/hooks/useOsceSession";
 import { TopicSelector } from "./TopicSelector";
 import { DoorNote } from "./DoorNote";
 import { ChatRoom } from "./ChatRoom";
 import { ResultsSummary } from "./ResultsSummary";
+import { FeedbackReport } from "../feedback/FeedbackReport";
 
 export function SimulationRoom() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const reviewSessionId = searchParams.get("session");
   const session = useOsceSession();
+
+  if (reviewSessionId) {
+    return (
+      <div>
+        <FeedbackReport
+          sessionId={reviewSessionId}
+          onBack={() => router.push("/")}
+        />
+      </div>
+    );
+  }
 
   return (
     <div>

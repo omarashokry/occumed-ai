@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { OSCESession } from "@/lib/types";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -12,6 +13,8 @@ export function RecentSessions({
   sessions: OSCESession[];
   isLoading: boolean;
 }) {
+  const router = useRouter();
+
   return (
     <Card>
       <CardHeader>
@@ -49,7 +52,16 @@ export function RecentSessions({
                 {sessions.map((s) => (
                   <tr
                     key={s.id}
-                    className="border-b border-gray-100 dark:border-gray-800/50"
+                    onClick={
+                      s.overall_outcome
+                        ? () => router.push(`/simulation?session=${s.id}`)
+                        : undefined
+                    }
+                    className={`border-b border-gray-100 dark:border-gray-800/50${
+                      s.overall_outcome
+                        ? " cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                        : ""
+                    }`}
                   >
                     <td className="py-3">{s.topic}</td>
                     <td className="py-3">
