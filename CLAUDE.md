@@ -1,6 +1,12 @@
-# OccuMed AI
+# HazardGPT
 
 AI-powered occupational medicine training platform with OSCE simulation and MCQ practice.
+
+## Deployment
+
+- **GitHub:** https://github.com/omarashokry/occumed-ai
+- **Production URL:** https://hazardgpt.vercel.app
+- **Hosting:** Vercel (linked to GitHub repo, auto-deploys on push)
 
 ## Stack
 
@@ -50,10 +56,10 @@ occumed-ai/
 │   │   ├── examiner.ts     # Agent C: gradeSession(scenario, transcript) -> Scorecard (uses RAG)
 │   │   └── mcq-writer.ts   # MCQ Writer: generateMCQs(topic, difficulty?, count?) -> MCQQuestion[] (uses RAG)
 │   ├── prompts/
-│   │   ├── architect.ts    # Agent A system prompt with RAG context injection
+│   │   ├── architect.ts    # Agent A system prompt with RAG context + OMST 2022 Curriculum LOs (targets LO2, LO3, LO4)
 │   │   ├── actor.ts        # Agent B system prompt with patient profile + gatekeeper rules
-│   │   ├── examiner.ts     # Agent C system prompt with grading rubric
-│   │   └── mcq-writer.ts   # MCQ writer system prompt with JSON schema + rules
+│   │   ├── examiner.ts     # Agent C system prompt with grading rubric mapped to OMST domains (LO1-LO7)
+│   │   └── mcq-writer.ts   # MCQ writer system prompt with OMST 2022 Curriculum domains + GPC mappings
 │   ├── rag/
 │   │   └── retriever.ts    # pgvector similarity search (embed query + match_documents RPC)
 │   └── services/
@@ -122,6 +128,19 @@ occumed-ai/
 | `mcq_attempts` | User answer submissions |
 | `score_records` | Per-category scores for radar chart |
 
+### Ingested Documents
+
+| Document | Chunks | Source |
+|----------|--------|--------|
+| COSHH Regulations 2002 | ~200 | `data/COSHH_Regulations_2002.pdf` |
+| HAVS Guidelines | ~150 | `data/HAVS_Guidelines.pdf` |
+| NIHL Guidelines | ~130 | `data/NIHL_Guidelines.pdf` |
+| Workplace Health & Safety Act | ~180 | `data/WHS_Act.pdf` |
+| EH40 Workplace Exposure Limits | ~120 | `data/EH40_WELs.pdf` |
+| OMST 2022 Curriculum | 56 | `data/OMST-2022-Curriculum.pdf` |
+
+Total: ~836 chunks in `documents` table.
+
 ### RPC Functions
 
 - `match_documents(query_embedding, match_count, filter_document)` — pgvector similarity search
@@ -154,6 +173,7 @@ GEMINI_API_KEY                # Google Gemini API key
 - **Dark mode chart colors:** PerformanceChart detects `prefers-color-scheme` via `window.matchMedia` listener and swaps Recharts color props (light: grid `#D1D5DB`, ticks `#6B7280`; dark: grid `#4B5563`, ticks `#9CA3AF`).
 - **Accessibility:** Spinner has `role="status"` + `aria-label`. Button has `aria-busy` when loading. MCQ options use `fieldset`/`legend` + `role="radiogroup"`/`role="radio"` + `aria-checked`. Topic buttons have `aria-label`. Chat input has `aria-label`. Nav hamburger has `aria-label` + `aria-expanded`.
 - **Responsive bubbles:** Chat message bubbles use `max-w-[85%] sm:max-w-[75%]` (ChatRoom) and `max-w-[90%] sm:max-w-[80%]` (AnnotatedTranscript) to prevent overflow on small phones.
+- **OMST 2022 Curriculum integration:** All three AI agent prompts (architect, examiner, mcq-writer) reference the OMST 2022 Curriculum's 11 Learning Outcomes. Architect scenarios target LO2/LO3/LO4, examiner grading maps categories to LO domains, MCQ questions align to curriculum domains with GPC mappings.
 
 ## Commands
 
@@ -165,7 +185,7 @@ npm run lint         # ESLint
 
 # PDF Ingestion (from local-tools/)
 cd local-tools
-source ../venv/bin/activate       # Python venv at project root
+source venv/bin/activate          # Python venv inside local-tools/
 python ingest.py                  # Ingest all PDFs in /data
 python ingest.py --file ../data/specific.pdf  # Ingest one PDF
 ```
@@ -179,3 +199,6 @@ python ingest.py --file ../data/specific.pdf  # Ingest one PDF
 - [x] Phase 5: Frontend — Dashboard, simulation room, topic selection
 - [x] Phase 6: Frontend — Feedback report (ChecklistTable, AnnotatedTranscript, FeedbackReport), MCQ practice UI (McqTopicSelector, QuestionCard, QuestionFeedback, McqSummary, McqRoom), /mcq page, ResultsSummary "View Full Report" button
 - [x] Phase 7: Polish — Mobile hamburger nav, styled error banners, dark mode chart colors, accessibility (ARIA roles/labels), responsive bubble widths, loading skeleton for PerformanceChart
+- [x] OMST 2022 Curriculum — Ingested PDF (56 chunks), integrated Learning Outcomes into architect/examiner/mcq-writer prompts
+- [x] Deployment — GitHub repo, Vercel project with env vars, production deploy at hazardgpt.vercel.app
+- [x] Branding — Renamed from "OccuMed AI" to "HazardGPT" (layout title, NavBar logo, dashboard welcome)
