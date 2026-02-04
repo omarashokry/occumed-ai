@@ -15,7 +15,7 @@ export async function retrieveChunks(
     filterDocument?: string;
   } = {}
 ): Promise<DocumentChunk[]> {
-  const { matchCount = 5, filterDocument } = options;
+  const { matchCount = 8, filterDocument } = options;
 
   // Embed the query
   const queryEmbedding = await embed(query);

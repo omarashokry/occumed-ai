@@ -132,14 +132,21 @@ occumed-ai/
 
 | Document | Chunks | Source |
 |----------|--------|--------|
-| COSHH Regulations 2002 | ~200 | `data/COSHH_Regulations_2002.pdf` |
-| HAVS Guidelines | ~150 | `data/HAVS_Guidelines.pdf` |
-| NIHL Guidelines | ~130 | `data/NIHL_Guidelines.pdf` |
-| Workplace Health & Safety Act | ~180 | `data/WHS_Act.pdf` |
-| EH40 Workplace Exposure Limits | ~120 | `data/EH40_WELs.pdf` |
-| OMST 2022 Curriculum | 56 | `data/OMST-2022-Curriculum.pdf` |
+| COSHH Regulations 2002 (L5) | ~200 | `data/L5 Control of Hazardous materials.pdf` |
+| Control of Noise at Work (L108) | varies | `data/l108.pdf` |
+| Workplace H&S Welfare (L24) | varies | `data/l24.pdf` |
+| First Aid at Work (L74) | varies | `data/l74.pdf` |
+| Dangerous Substances (L140) | varies | `data/l140.pdf` |
+| OMST 2022 Curriculum | 56 | `data/OMST-2022-Curriculum-Aug-2022.pdf` |
+| RIDDOR 2013 | 64 | `data/RIDDOR-2013.pdf` |
+| Management of H&S at Work Regs 1999 | 42 | `data/Management-HS-Work-Regs-1999.pdf` |
+| Control of Asbestos Regs 2012 | 64 | `data/Control-of-Asbestos-Regs-2012.pdf` |
+| Control of Lead at Work (ACOP L132) | 267 | `data/Control-of-Lead-ACOP-L132.pdf` |
+| Ionising Radiations Regs 2017 | 148 | `data/Ionising-Radiations-Regs-2017.pdf` |
+| DVLA Fitness to Drive Guide 2024 | 266 | `data/DVLA-Fitness-to-Drive-2024.pdf` |
+| Good Occupational Medical Practice 2017 | 80 | `data/GOMP-2017.pdf` |
 
-Total: ~836 chunks in `documents` table.
+Total: ~1,767+ chunks in `documents` table.
 
 ### RPC Functions
 
