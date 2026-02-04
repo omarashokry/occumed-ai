@@ -6,7 +6,7 @@ AI-powered occupational medicine training platform with OSCE simulation and MCQ 
 
 - **Frontend + API:** Next.js 14 (App Router) + Tailwind CSS + Recharts
 - **Database + Vector Store:** Supabase (PostgreSQL + pgvector)
-- **AI:** Gemini API (gemini-2.0-flash for agents, text-embedding-004 for embeddings)
+- **AI:** Gemini API (gemini-2.5-flash for agents, text-embedding-004 for embeddings)
 - **Local Tooling:** Python scripts for PDF ingestion
 
 ## Project Structure
