@@ -167,6 +167,11 @@ export function useMcqSession() {
     setPhase('review');
   }, []);
 
+  const endEarly = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEY);
+    setPhase('summary');
+  }, []);
+
   const reset = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
     setPhase("select");
@@ -199,6 +204,7 @@ export function useMcqSession() {
     selectOption,
     submitAnswer,
     nextQuestion,
+    endEarly,
     reset,
     recoverSession,
     toggleFlag,

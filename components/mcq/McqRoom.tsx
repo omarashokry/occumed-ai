@@ -37,6 +37,23 @@ export function McqRoom() {
 
       {session.phase === "quiz" && session.questions[session.currentIndex] && (
         <div className="max-w-2xl mx-auto space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {session.score.total} of {session.questions.length} answered
+            </span>
+            <Button
+              onClick={() => {
+                if (session.score.total === 0) {
+                  session.reset();
+                } else {
+                  session.endEarly();
+                }
+              }}
+              className="text-sm px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+            >
+              End Quiz
+            </Button>
+          </div>
           <Card>
             <CardContent className="pt-6">
               <QuestionCard
