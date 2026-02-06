@@ -2,6 +2,7 @@ import { generateJSON } from './base';
 import { getExaminerPrompt } from '@/lib/prompts/examiner';
 import { retrieveContext } from '@/lib/rag/retriever';
 import { ScenarioConfig, ChatMessage, Scorecard } from '@/lib/types';
+import { ScorecardSchema } from '@/lib/validation/schemas';
 
 /**
  * Agent C — The Examiner
@@ -28,7 +29,8 @@ export async function gradeSession(
   // Grade the consultation
   const scorecard = await generateJSON<Scorecard>(
     systemPrompt,
-    `Please grade the following OSCE consultation transcript:\n\n${transcriptText}`
+    `Please grade the following OSCE consultation transcript:\n\n${transcriptText}`,
+    ScorecardSchema
   );
 
   return scorecard;

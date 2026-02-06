@@ -2,6 +2,12 @@ import { NextResponse } from 'next/server';
 
 const MCQ_TOPICS = [
   {
+    id: 'mixed-practice',
+    name: 'Mixed Practice',
+    description: 'Questions from all topics and all ingested material',
+    regulations: ['All regulations'],
+  },
+  {
     id: 'noise-induced-hearing-loss',
     name: 'Noise-Induced Hearing Loss',
     description: 'Assessment and management of occupational noise exposure',

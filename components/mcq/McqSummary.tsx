@@ -21,10 +21,12 @@ export function McqSummary({
   score,
   questions,
   onReset,
+  onReview,
 }: {
   score: { correct: number; total: number; answers: AnswerRecord[] };
   questions: MCQQuestion[];
   onReset: () => void;
+  onReview?: () => void;
 }) {
   const pct = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0;
   const scoreColor =
@@ -96,10 +98,15 @@ export function McqSummary({
             );
           })}
         </CardContent>
-        <CardFooter>
-          <Button onClick={onReset} className="w-full">
+        <CardFooter className="flex gap-2">
+          <Button onClick={onReset} className="flex-1">
             Start New Practice
           </Button>
+          {onReview && (
+            <Button onClick={onReview} variant="secondary" className="flex-1">
+              Review Answers
+            </Button>
+          )}
         </CardFooter>
       </Card>
     </div>

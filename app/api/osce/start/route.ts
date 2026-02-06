@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { startSession } from '@/lib/services/osce';
+import { osceStartLimiter } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
+    const rateLimitResponse = osceStartLimiter(req);
+    if (rateLimitResponse) return rateLimitResponse;
+
     const body = await req.json();
     const { topic, difficulty, emotionalState } = body;
 

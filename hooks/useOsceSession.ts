@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Scorecard } from "@/lib/types";
 
 export type SessionPhase = "select" | "door-note" | "chat" | "results";
@@ -19,6 +19,25 @@ export function useOsceSession() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  const STORAGE_KEY_PREFIX = 'hazardgpt-osce-';
+
+  // Persist state on every change
+  useEffect(() => {
+    if (!sessionId) return;
+    const state = { phase, sessionId, doorNote, messages, scorecard };
+    try {
+      localStorage.setItem(`${STORAGE_KEY_PREFIX}${sessionId}`, JSON.stringify(state));
+    } catch { /* quota exceeded -- ignore */ }
+  }, [phase, sessionId, doorNote, messages, scorecard]);
+
+  // Consultation timer
+  useEffect(() => {
+    if (phase !== 'chat') return;
+    const timer = setInterval(() => setElapsedSeconds((s) => s + 1), 1000);
+    return () => clearInterval(timer);
+  }, [phase]);
 
   const startSession = useCallback(
     async (topic: string, difficulty?: string) => {
@@ -128,7 +147,28 @@ export function useOsceSession() {
     }
   }, [sessionId]);
 
+  const recoverSession = useCallback(() => {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key?.startsWith(STORAGE_KEY_PREFIX)) continue;
+      try {
+        const saved = JSON.parse(localStorage.getItem(key) || '');
+        if (saved.phase === 'chat' || saved.phase === 'door-note') {
+          setPhase(saved.phase);
+          setSessionId(saved.sessionId);
+          setDoorNote(saved.doorNote);
+          setMessages(saved.messages || []);
+          return true;
+        }
+      } catch { /* corrupt entry -- skip */ }
+    }
+    return false;
+  }, []);
+
   const reset = useCallback(() => {
+    if (sessionId) {
+      localStorage.removeItem(`${STORAGE_KEY_PREFIX}${sessionId}`);
+    }
     setPhase("select");
     setSessionId(null);
     setDoorNote("");
@@ -137,7 +177,8 @@ export function useOsceSession() {
     setIsLoading(false);
     setIsSending(false);
     setError(null);
-  }, []);
+    setElapsedSeconds(0);
+  }, [sessionId]);
 
   return {
     phase,
@@ -149,10 +190,12 @@ export function useOsceSession() {
     isLoading,
     isSending,
     error,
+    elapsedSeconds,
     startSession,
     resumeSession,
     sendMessage,
     endSession,
     reset,
+    recoverSession,
   };
 }

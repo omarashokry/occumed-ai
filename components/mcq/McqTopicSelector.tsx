@@ -73,10 +73,32 @@ export function McqTopicSelector({
         </p>
       </div>
 
+      {/* Mixed Practice card (full-width, above grid) */}
+      {!isFetching && topics.length > 0 && topics[0].id === "mixed-practice" && (
+        <button
+          onClick={() => setSelected("mixed-practice")}
+          disabled={isStarting}
+          aria-label="Select Mixed Practice"
+          className={`w-full text-left rounded-lg border-2 border-dashed p-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/40 ${
+            selected === "mixed-practice"
+              ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+              : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-blue-400 dark:hover:border-blue-600"
+          } disabled:opacity-50`}
+        >
+          <h3 className="font-semibold text-sm mb-1">{topics[0].name}</h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+            {topics[0].description}
+          </p>
+          <p className="text-xs text-blue-600 dark:text-blue-400">
+            {topics[0].regulations.join(", ")}
+          </p>
+        </button>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {isFetching
           ? Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)
-          : topics.map((topic) => (
+          : topics.filter((t) => t.id !== "mixed-practice").map((topic) => (
               <button
                 key={topic.id}
                 onClick={() => setSelected(topic.id)}

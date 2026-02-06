@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendMessage } from '@/lib/services/osce';
+import { osceMessageLimiter } from '@/lib/rate-limit';
 
 export async function POST(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const rateLimitResponse = osceMessageLimiter(req);
+    if (rateLimitResponse) return rateLimitResponse;
+
     const body = await req.json();
     const { message } = body;
 

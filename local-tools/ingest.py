@@ -20,7 +20,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from pypdf import PdfReader
-import google.generativeai as genai
+from google import genai
 from supabase import create_client
 
 from chunker import chunk_pages, Chunk
@@ -42,7 +42,8 @@ EMBED_DELAY = 0.5  # seconds between batches
 def init_clients():
     """Initialize Supabase and Gemini clients."""
     supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-    genai.configure(api_key=GEMINI_API_KEY)
+    global gemini_client
+    gemini_client = genai.Client(api_key=GEMINI_API_KEY)
     return supabase
 
 
@@ -69,12 +70,15 @@ def sanitize_doc_name(filename: str) -> str:
 
 
 def embed_texts(texts: list[str]) -> list[list[float]]:
-    """Embed a batch of texts using Gemini text-embedding-004."""
-    result = genai.embed_content(
-        model="models/text-embedding-004",
-        content=texts,
+    """Embed a batch of texts using Gemini gemini-embedding-001 (768-dim)."""
+    from google.genai import types
+
+    result = gemini_client.models.embed_content(
+        model="gemini-embedding-001",
+        contents=texts,
+        config=types.EmbedContentConfig(output_dimensionality=768),
     )
-    return result["embedding"]
+    return [e.values for e in result.embeddings]
 
 
 def embed_chunks(chunks: list[Chunk]) -> list[list[float]]:

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Spinner } from "@/components/ui/Spinner";
 import { ChecklistTable } from "./ChecklistTable";
 import { AnnotatedTranscript } from "./AnnotatedTranscript";
+import { ReasoningChain } from "./ReasoningChain";
 
 const categories: {
   key: keyof Pick<
@@ -124,6 +125,11 @@ export function FeedbackReport({
           )}
         </CardContent>
       </Card>
+
+      {/* Reasoning Chain */}
+      {sc.reasoning_chain && sc.reasoning_chain.length > 0 && (
+        <ReasoningChain steps={sc.reasoning_chain} />
+      )}
 
       {/* Annotated Transcript */}
       {sc.annotated_transcript && sc.annotated_transcript.length > 0 && (

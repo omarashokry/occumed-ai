@@ -19,13 +19,14 @@ export function getGeminiFlash(): GenerativeModel {
 }
 
 export function getEmbeddingModel(): GenerativeModel {
-  return getGenAI().getGenerativeModel({ model: 'text-embedding-004' });
+  return getGenAI().getGenerativeModel({ model: 'gemini-embedding-001' });
 }
 
 export async function embed(text: string): Promise<number[]> {
-  const model = getGenAI().getGenerativeModel({ model: 'text-embedding-004' });
+  const model = getGenAI().getGenerativeModel({ model: 'gemini-embedding-001' });
   const result = await model.embedContent(text);
-  return result.embedding.values;
+  // Truncate to 768 dimensions for pgvector compatibility
+  return result.embedding.values.slice(0, 768);
 }
 
 export { getGenAI };

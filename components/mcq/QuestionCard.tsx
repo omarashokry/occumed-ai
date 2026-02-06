@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { MCQQuestion } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
 
@@ -12,6 +13,8 @@ export function QuestionCard({
   isSubmitting,
   onSelect,
   onSubmit,
+  onToggleFlag,
+  isFlagged,
 }: {
   question: MCQQuestion;
   questionNumber: number;
@@ -21,7 +24,26 @@ export function QuestionCard({
   isSubmitting: boolean;
   onSelect: (option: string) => void;
   onSubmit: () => void;
+  onToggleFlag?: (questionId: string) => void;
+  isFlagged?: boolean;
 }) {
+  // Number keys 1-5 for option selection, Enter to submit
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (feedback) return;
+      const labels = ['A', 'B', 'C', 'D', 'E'];
+      const idx = parseInt(e.key) - 1;
+      if (idx >= 0 && idx < question.options.length) {
+        onSelect(labels[idx]);
+      }
+      if (e.key === 'Enter' && selectedOption && !isSubmitting) {
+        onSubmit();
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [feedback, selectedOption, isSubmitting, question.options.length, onSelect, onSubmit]);
+
   const progress = ((questionNumber) / totalQuestions) * 100;
 
   function optionStyle(label: string) {
@@ -47,8 +69,17 @@ export function QuestionCard({
       {/* Progress */}
       <div>
         <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 mb-1">
-          <span>
+          <span className="flex items-center">
             Question {questionNumber} of {totalQuestions}
+            {onToggleFlag && (
+              <button
+                onClick={() => onToggleFlag(question.id!)}
+                className={`ml-2 text-sm ${isFlagged ? 'text-yellow-500' : 'text-gray-400'} hover:text-yellow-500`}
+                aria-label={isFlagged ? 'Unflag question' : 'Flag question'}
+              >
+                {isFlagged ? 'Flagged' : 'Flag'}
+              </button>
+            )}
           </span>
           <span>{Math.round(progress)}%</span>
         </div>

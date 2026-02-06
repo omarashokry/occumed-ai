@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateQuestions } from '@/lib/services/mcq';
+import { mcqGenerateLimiter } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
+    const rateLimitResponse = mcqGenerateLimiter(req);
+    if (rateLimitResponse) return rateLimitResponse;
+
     const body = await req.json();
     const { topic, difficulty, count } = body;
 

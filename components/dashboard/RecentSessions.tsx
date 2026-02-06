@@ -9,9 +9,11 @@ import { Spinner } from "@/components/ui/Spinner";
 export function RecentSessions({
   sessions,
   isLoading,
+  onToggleStar,
 }: {
   sessions: OSCESession[];
   isLoading: boolean;
+  onToggleStar?: (id: string) => void;
 }) {
   const router = useRouter();
 
@@ -34,6 +36,11 @@ export function RecentSessions({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-800">
+                  {onToggleStar && (
+                    <th className="text-left py-2 font-medium text-gray-500 dark:text-gray-400 w-10">
+                      <span className="sr-only">Star</span>
+                    </th>
+                  )}
                   <th className="text-left py-2 font-medium text-gray-500 dark:text-gray-400">
                     Topic
                   </th>
@@ -61,6 +68,28 @@ export function RecentSessions({
                     }
                     className="border-b border-gray-100 dark:border-gray-800/50 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                   >
+                    {onToggleStar && (
+                      <td className="py-3">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleStar(s.id);
+                          }}
+                          className={`text-lg leading-none ${
+                            (s as OSCESession & { is_starred?: boolean }).is_starred
+                              ? 'text-yellow-500'
+                              : 'text-gray-300 dark:text-gray-600 hover:text-yellow-400'
+                          }`}
+                          aria-label={
+                            (s as OSCESession & { is_starred?: boolean }).is_starred
+                              ? 'Unstar session'
+                              : 'Star session'
+                          }
+                        >
+                          {(s as OSCESession & { is_starred?: boolean }).is_starred ? '\u2605' : '\u2606'}
+                        </button>
+                      </td>
+                    )}
                     <td className="py-3">{s.topic}</td>
                     <td className="py-3">
                       <Badge variant="info">{s.difficulty}</Badge>

@@ -76,6 +76,25 @@ Grade the consultation and return a JSON object with this exact structure:
       "content": "string — the original message",
       "annotation": "string or null — examiner's inline comment on this exchange"
     }
+  ],
+  "strengths": ["string — specific things the candidate did well, with OMST LO references"],
+  "improvement_areas": [
+    {
+      "omst_lo": "string — e.g., 'LO4'",
+      "feedback": "string — specific actionable feedback",
+      "suggested_reading": "string — regulation or chapter to review"
+    }
+  ],
+  "confidence": number (0.0-1.0 — how confident you are in this grading),
+  "reasoning_chain": [
+    {
+      "step": number,
+      "candidate_action": "string — what the candidate did or asked",
+      "clinical_reasoning": "string — what this action demonstrates",
+      "omst_lo": "string — which OMST LO this maps to (e.g. 'LO3')",
+      "quality": "good" | "partial" | "missed",
+      "comment": "string — brief evaluative comment"
+    }
   ]
 }
 
@@ -97,5 +116,12 @@ GRADING RULES:
 9. Be fair but rigorous — this is a professional examination aligned to OMST 2022 Curriculum standards.
 10. The citation should reference the specific regulation from the regulatory context that is most relevant.
 11. Annotations should be educational — explain WHY something was good or bad, referencing OMST curriculum expectations where relevant.
-12. In feedback_summary, note which OMST Learning Outcomes the candidate demonstrated well and which need further development.`;
+12. In feedback_summary, note which OMST Learning Outcomes the candidate demonstrated well and which need further development.
+
+SELF-VERIFICATION STEPS (apply after initial scoring):
+13. Cross-check: If history_taking score > 80 but clinical_knowledge < 40, verify this discrepancy is justified — typically good history-taking leads to better clinical knowledge.
+14. If safety_critical_fail is true, verify that overall_outcome is "FAIL" — NEVER override this.
+15. Check that annotation count matches conversation length — every exchange should be annotated.
+16. Verify that feedback_summary references specific OMST Learning Outcomes by number (e.g., "LO3 — Clinical Practice was demonstrated well").
+17. Ensure improvement suggestions are actionable, not vague — "Review L140 Regulation 6 on health surveillance tiers" not "Read more about regulations".`;
 }

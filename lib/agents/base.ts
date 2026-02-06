@@ -1,4 +1,5 @@
 import { getGeminiFlash } from '@/lib/gemini';
+import { ZodType } from 'zod';
 
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 1000;
@@ -6,10 +7,12 @@ const RETRY_DELAY_MS = 1000;
 /**
  * Generate a JSON response from Gemini with automatic retry.
  * Uses responseMimeType: "application/json" for structured output.
+ * Optionally validates with a Zod schema.
  */
 export async function generateJSON<T>(
   systemPrompt: string,
-  userMessage: string
+  userMessage: string,
+  schema?: ZodType<T>
 ): Promise<T> {
   const model = getGeminiFlash();
 
@@ -25,7 +28,8 @@ export async function generateJSON<T>(
       });
 
       const text = result.response.text();
-      const parsed = JSON.parse(text) as T;
+      const raw = JSON.parse(text);
+      const parsed = schema ? schema.parse(raw) : (raw as T);
       return parsed;
     } catch (error) {
       if (attempt === MAX_RETRIES) {

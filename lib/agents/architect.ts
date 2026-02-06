@@ -2,6 +2,7 @@ import { generateJSON } from './base';
 import { getArchitectPrompt } from '@/lib/prompts/architect';
 import { retrieveContext } from '@/lib/rag/retriever';
 import { ScenarioConfig } from '@/lib/types';
+import { ScenarioConfigSchema } from '@/lib/validation/schemas';
 
 /**
  * Agent A — The Architect
@@ -25,7 +26,7 @@ export async function generateScenario(
   }
 
   // Generate scenario JSON
-  const scenario = await generateJSON<ScenarioConfig>(systemPrompt, userMessage);
+  const scenario = await generateJSON<ScenarioConfig>(systemPrompt, userMessage, ScenarioConfigSchema);
 
   // Ensure difficulty matches request
   scenario.difficulty = difficulty;

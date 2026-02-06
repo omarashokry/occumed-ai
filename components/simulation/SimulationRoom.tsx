@@ -17,6 +17,14 @@ export function SimulationRoom() {
   const session = useOsceSession();
   const resumedRef = useRef(false);
 
+  // Recover session from localStorage on mount (only if no URL params)
+  useEffect(() => {
+    if (!resumeId && !reviewSessionId && session.phase === "select") {
+      session.recoverSession();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (resumeId && !resumedRef.current) {
       resumedRef.current = true;
@@ -64,6 +72,7 @@ export function SimulationRoom() {
           onSend={session.sendMessage}
           onEnd={session.endSession}
           isEnding={session.isLoading}
+          elapsedSeconds={session.elapsedSeconds}
         />
       )}
 

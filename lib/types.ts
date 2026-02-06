@@ -1,91 +1,25 @@
+import { ScenarioConfigSchema, ScorecardSchema, MCQQuestionSchema } from './validation/schemas';
+import { z } from 'zod';
+
 // ============================================================
 // OSCE Types
 // ============================================================
 
-export interface ScenarioConfig {
-  topic: string;
-  difficulty: string;
-  door_note: string;
-  patient_profile: {
-    name: string;
-    age: number;
-    gender: string;
-    occupation: string;
-    presenting_complaint: string;
-    background: string;
-  };
-  hidden_agenda: {
-    undisclosed_symptoms: string[];
-    emotional_state: string;
-    gatekeeper_rules: string[];
-  };
-  clinical_checklist: string[];
-  legal_checklist: string[];
-  communication_checklist: string[];
-  safety_critical_fail_trigger: string;
-  required_citation: string;
-}
+export type ScenarioConfig = z.infer<typeof ScenarioConfigSchema>;
 
-export interface ScorecardItem {
-  item: string;
-  achieved: boolean;
-  comment: string;
-}
+export type Scorecard = z.infer<typeof ScorecardSchema>;
 
-export interface Scorecard {
-  history_taking: {
-    score: number;
-    max: number;
-    items: ScorecardItem[];
-  };
-  clinical_knowledge: {
-    score: number;
-    max: number;
-    items: ScorecardItem[];
-  };
-  legal_regulatory: {
-    score: number;
-    max: number;
-    items: ScorecardItem[];
-  };
-  communication: {
-    score: number;
-    max: number;
-    items: ScorecardItem[];
-  };
-  safety_critical_fail: boolean;
-  overall_outcome: 'PASS' | 'FAIL';
-  overall_percentage: number;
-  feedback_summary: string;
-  citation: string;
-  annotated_transcript: AnnotatedMessage[];
-}
+export type ScorecardItem = Scorecard['history_taking']['items'][number];
 
-export interface AnnotatedMessage {
-  role: 'user' | 'assistant';
-  content: string;
-  annotation?: string;
-}
+export type AnnotatedMessage = Scorecard['annotated_transcript'][number];
+
+export type MCQQuestion = z.infer<typeof MCQQuestionSchema> & { id?: string; };
+
+export type MCQOption = MCQQuestion['options'][number];
 
 // ============================================================
 // MCQ Types
 // ============================================================
-
-export interface MCQOption {
-  label: string; // A, B, C, D, E
-  text: string;
-}
-
-export interface MCQQuestion {
-  id?: string;
-  topic_tag: string;
-  difficulty: string;
-  stem: string;
-  options: MCQOption[];
-  correct_answer: string; // A-E
-  explanation: string;
-  citation: string;
-}
 
 export interface MCQAttempt {
   id?: string;
@@ -144,6 +78,7 @@ export interface OSCESession {
   overall_outcome?: 'PASS' | 'FAIL';
   started_at: string;
   ended_at?: string;
+  is_starred?: boolean;
 }
 
 // ============================================================

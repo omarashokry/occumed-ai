@@ -15,9 +15,26 @@ export async function generateQuestions(
 
   // Insert each question into mcq_questions
   const supabase = createServerClient();
+
+  // Deduplicate: filter out questions with stems similar to existing ones
+  const { data: existing } = await supabase
+    .from('mcq_questions')
+    .select('id, question_json')
+    .eq('topic_tag', topic)
+    .limit(200);
+
+  const existingStems = new Set(
+    (existing || []).map((e) => ((e.question_json as MCQQuestion).stem || '').slice(0, 100))
+  );
+
+  // Filter out duplicates
+  const freshQuestions = questions.filter(
+    (q) => !existingStems.has(q.stem.slice(0, 100))
+  );
+
   const questionsWithIds: MCQQuestion[] = [];
 
-  for (const q of questions) {
+  for (const q of freshQuestions) {
     const { data, error } = await supabase
       .from('mcq_questions')
       .insert({

@@ -48,6 +48,23 @@ Questions MUST align with the OMST 2022 Curriculum Learning Outcomes. The 11 cur
 10. Education and training (GPC 8)
 11. Research (GPC 9)
 
+IMPORTANT: If the RAG context includes **example exam questions** from past papers or question banks, use them as **style and difficulty benchmarks** — match their complexity, distractor quality, and clinical reasoning depth. Do NOT copy them verbatim. Use them to calibrate the level of your generated questions.
+
+BEFORE generating each question, mentally plan it:
+
+1. LEARNING OUTCOME: Which OMST LO does this question test? (e.g., LO3 — Clinical Practice)
+2. COMPLEXITY LEVEL: Is this testing recall (DOccMed) or advanced reasoning (MFOM)?
+3. CLINICAL SCENARIO: Design a realistic vignette with specific patient details (age, occupation, exposure history, duration of symptoms)
+4. CORRECT ANSWER: What would an experienced occupational physician do? Why? (cite regulation)
+5. DISTRACTOR DESIGN:
+   - Misconception A: Common trainee error
+   - Misconception B: Partially correct but incomplete
+   - Misconception C: Correct for a different condition
+   - Misconception D: Outdated or superseded guidance
+6. EXPLANATION: For each option, explain the reasoning with regulatory citation
+
+Now generate the JSON.
+
 Rules:
 1. Every question MUST be grounded in the provided regulatory context — cite specific regulation numbers or guidance sections.
 2. Use clinical vignettes wherever possible — present a realistic workplace scenario with patient details (age, occupation, exposure history).
@@ -59,5 +76,11 @@ Rules:
 8. Each question must be self-contained — do not reference other questions.
 9. Stems should end with a clear question (e.g., "What is the most appropriate next step?" or "Which regulation applies?").
 10. Cover a mix of question types: best management, most likely diagnosis, regulatory requirement, next investigation, fitness-to-work decision.
-11. Each question should primarily test one or more OMST Learning Outcomes. Focus on domains 3 (clinical practice), 4 (workplace risk), and 7 (worker safety) but also include questions covering domains 1, 2, 5, and 6.`;
+11. Each question should primarily test one or more OMST Learning Outcomes. Focus on domains 3 (clinical practice), 4 (workplace risk), and 7 (worker safety) but also include questions covering domains 1, 2, 5, and 6.
+12. For DOccMed: focus on recognising hazards, applying core regulations, and making fitness-to-work decisions.
+13. For MFOM: focus on complex multi-step reasoning — conflicting obligations, comorbidities affecting management, novel workplace scenarios.
+14. Distractors must be PLAUSIBLE — each should represent a mistake a real trainee might make, not an obviously absurd option.
+15. Stems must include specific numerical details where relevant (exposure levels, blood lead levels, audiometry values, noise measurements).
+16. Require multi-step clinical reasoning in stems — include comorbidities that affect management decisions, not simple single-concept questions.
+17. When generating mixed-practice questions, ensure each question covers a DIFFERENT OMST curriculum domain. Do not repeat topic areas within the same batch.`;
 }

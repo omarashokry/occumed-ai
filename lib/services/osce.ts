@@ -79,11 +79,15 @@ export async function sendMessage(
     throw new Error(`Failed to read messages: ${messagesError.message}`);
   }
 
+  const MAX_HISTORY_MESSAGES = 40;
   const history: ChatMessage[] = (messages || []).map((m) => ({
     session_id: sessionId,
     role: m.role as 'user' | 'assistant',
     content: m.content,
   }));
+  const cappedHistory = history.length > MAX_HISTORY_MESSAGES
+    ? history.slice(-MAX_HISTORY_MESSAGES)
+    : history;
 
   // Insert user message
   const { error: insertError } = await supabase
@@ -98,7 +102,7 @@ export async function sendMessage(
   const scenario = session.scenario_json as ScenarioConfig;
   const response = await respondAsPatient(
     scenario,
-    history,
+    cappedHistory,
     message,
     session.emotional_state
   );
@@ -125,7 +129,8 @@ export async function sendMessage(
  * 6. Return scorecard
  */
 export async function endSession(
-  sessionId: string
+  sessionId: string,
+  durationSeconds?: number
 ): Promise<Scorecard> {
   const supabase = createServerClient();
 
@@ -173,6 +178,7 @@ export async function endSession(
       scorecard_json: scorecard,
       overall_outcome: scorecard.overall_outcome,
       ended_at: new Date().toISOString(),
+      ...(durationSeconds !== undefined ? { duration_seconds: durationSeconds } : {}),
     })
     .eq('id', sessionId);
 

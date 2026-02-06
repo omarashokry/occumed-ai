@@ -15,12 +15,14 @@ export function ChatRoom({
   onSend,
   onEnd,
   isEnding,
+  elapsedSeconds = 0,
 }: {
   messages: ChatMsg[];
   isSending: boolean;
   onSend: (message: string) => void;
   onEnd: () => void;
   isEnding: boolean;
+  elapsedSeconds?: number;
 }) {
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -38,6 +40,18 @@ export function ChatRoom({
     inputRef.current?.focus();
   }, []);
 
+  // Cmd/Ctrl+K to focus input
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   function handleSend() {
     const trimmed = input.trim();
     if (!trimmed || isSending) return;
@@ -49,7 +63,13 @@ export function ChatRoom({
     <div className="flex flex-col h-[calc(100vh-12rem)] max-w-3xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-800">
-        <h2 className="text-lg font-semibold">Consultation Room</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg font-semibold">Consultation Room</h2>
+          <span className="text-sm font-mono text-gray-500 dark:text-gray-400">
+            {String(Math.floor(elapsedSeconds / 60)).padStart(2, '0')}:
+            {String(elapsedSeconds % 60).padStart(2, '0')}
+          </span>
+        </div>
         <Button
           variant="danger"
           onClick={onEnd}

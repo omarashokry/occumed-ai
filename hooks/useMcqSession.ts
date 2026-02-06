@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { MCQQuestion } from "@/lib/types";
 
-export type McqPhase = "select" | "quiz" | "summary";
+export type McqPhase = "select" | "quiz" | "summary" | "review";
 
 interface AnswerRecord {
   questionId: string;
@@ -38,6 +38,19 @@ export function useMcqSession() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [flaggedQuestions, setFlaggedQuestions] = useState<Set<string>>(new Set());
+  const [reviewIndex, setReviewIndex] = useState(0);
+
+  const STORAGE_KEY = 'hazardgpt-mcq-session';
+
+  // Persist state on every change during quiz
+  useEffect(() => {
+    if (phase !== 'quiz') return;
+    const state = { questions, currentIndex, selectedOption, feedback, score };
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {}
+  }, [phase, questions, currentIndex, selectedOption, feedback, score]);
 
   const startSession = useCallback(async (topic: string, count: number) => {
     setIsLoading(true);
@@ -124,7 +137,38 @@ export function useMcqSession() {
     }
   }, [currentIndex, questions.length]);
 
+  const recoverSession = useCallback(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '');
+      if (saved.questions?.length > 0) {
+        setQuestions(saved.questions);
+        setCurrentIndex(saved.currentIndex || 0);
+        setSelectedOption(saved.selectedOption || null);
+        setFeedback(saved.feedback || null);
+        setScore(saved.score || { correct: 0, total: 0, answers: [] });
+        setPhase('quiz');
+        return true;
+      }
+    } catch {}
+    return false;
+  }, []);
+
+  const toggleFlag = useCallback((questionId: string) => {
+    setFlaggedQuestions((prev) => {
+      const next = new Set(prev);
+      if (next.has(questionId)) next.delete(questionId);
+      else next.add(questionId);
+      return next;
+    });
+  }, []);
+
+  const startReview = useCallback(() => {
+    setReviewIndex(0);
+    setPhase('review');
+  }, []);
+
   const reset = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEY);
     setPhase("select");
     setQuestions([]);
     setCurrentIndex(0);
@@ -134,6 +178,8 @@ export function useMcqSession() {
     setIsLoading(false);
     setIsSubmitting(false);
     setError(null);
+    setFlaggedQuestions(new Set());
+    setReviewIndex(0);
   }, []);
 
   return {
@@ -146,10 +192,16 @@ export function useMcqSession() {
     isLoading,
     isSubmitting,
     error,
+    flaggedQuestions,
+    reviewIndex,
+    setReviewIndex,
     startSession,
     selectOption,
     submitAnswer,
     nextQuestion,
     reset,
+    recoverSession,
+    toggleFlag,
+    startReview,
   };
 }
