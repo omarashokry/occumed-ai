@@ -21,6 +21,8 @@ const TEXTBOOK_QUERIES = [
   'OMST curriculum clinical practice fitness assessment occupational medicine',
   'fitness to drive medical standards DVLA guidelines conditions',
   'good occupational medical practice ethics professional conduct',
+  'fitness for work medical aspects sickness absence rehabilitation return to work',
+  'occupational health clinical management diagnosis treatment workplace',
 ];
 
 /** HSE regulation source_document values (from ingested PDFs) */
@@ -45,6 +47,8 @@ const TEXTBOOK_DOCUMENTS = [
   'Diploma_in_Occupational_Medicine_example_questions',
   'MFOM_Regs_Sep_2024',
   'assessing_fitness_to_drive_january_2024',
+  'John_Hobson_(editor),_Julia_Smedley_(editor)_Fitness_for_Work_The_Medical_Aspects_Oxford_University_Press_(2019)',
+  'Oxford_Handbook_of_Occupational_Health_3rd_Edition',
 ];
 
 /**

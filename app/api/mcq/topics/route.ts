@@ -17,7 +17,7 @@ const MCQ_TOPICS = [
     id: 'textbook-only',
     name: 'Textbook & Clinical',
     description: 'Clinical practice, fitness assessments, and exam prep — no HSE regulations',
-    regulations: ['OMST 2022', 'GOMP 2017', 'DVLA Fitness to Drive', 'DOccMed Examples', 'MFOM Regs'],
+    regulations: ['OMST 2022', 'GOMP 2017', 'DVLA Fitness to Drive', 'DOccMed Examples', 'MFOM Regs', 'Hobson & Smedley', 'Oxford Handbook'],
   },
   {
     id: 'noise-induced-hearing-loss',
