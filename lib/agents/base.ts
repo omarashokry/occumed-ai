@@ -12,7 +12,8 @@ const RETRY_DELAY_MS = 1000;
 export async function generateJSON<T>(
   systemPrompt: string,
   userMessage: string,
-  schema?: ZodType<T>
+  schema?: ZodType<T>,
+  options?: { temperature?: number }
 ): Promise<T> {
   const model = getGeminiFlash();
 
@@ -23,7 +24,7 @@ export async function generateJSON<T>(
         systemInstruction: { role: 'system', parts: [{ text: systemPrompt }] },
         generationConfig: {
           responseMimeType: 'application/json',
-          temperature: 0.7,
+          temperature: options?.temperature ?? 0.7,
         },
       });
 

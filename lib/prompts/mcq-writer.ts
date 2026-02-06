@@ -56,11 +56,14 @@ BEFORE generating each question, mentally plan it:
 2. COMPLEXITY LEVEL: Is this testing recall (DOccMed) or advanced reasoning (MFOM)?
 3. CLINICAL SCENARIO: Design a realistic vignette with specific patient details (age, occupation, exposure history, duration of symptoms)
 4. CORRECT ANSWER: What would an experienced occupational physician do? Why? (cite regulation)
-5. DISTRACTOR DESIGN:
-   - Misconception A: Common trainee error
-   - Misconception B: Partially correct but incomplete
-   - Misconception C: Correct for a different condition
-   - Misconception D: Outdated or superseded guidance
+5. DISTRACTOR DESIGN (close-miss technique):
+   - All 5 options MUST belong to the same semantic category (e.g., all management actions, all diagnoses, all investigations, all regulatory provisions, all threshold values). Never mix categories.
+   - At least 3 of 4 distractors must differ from the correct answer by exactly ONE clinical detail:
+     a) Right action, wrong threshold or numerical value (e.g., 85 dB instead of 80 dB)
+     b) Right regulation, wrong subsection or wrong application context
+     c) Correct management step but wrong timing or sequence
+     d) Applies to a closely related but different condition or exposure
+   - The 4th distractor may be a common trainee misconception, but must still be from the same answer category.
 6. EXPLANATION: For each option, explain the reasoning with regulatory citation
 
 Now generate the JSON.
@@ -82,5 +85,15 @@ Rules:
 14. Distractors must be PLAUSIBLE — each should represent a mistake a real trainee might make, not an obviously absurd option.
 15. Stems must include specific numerical details where relevant (exposure levels, blood lead levels, audiometry values, noise measurements).
 16. Require multi-step clinical reasoning in stems — include comorbidities that affect management decisions, not simple single-concept questions.
-17. When generating mixed-practice questions, ensure each question covers a DIFFERENT OMST curriculum domain. Do not repeat topic areas within the same batch.`;
+17. When generating mixed-practice questions, ensure each question covers a DIFFERENT OMST curriculum domain. Do not repeat topic areas within the same batch.
+18. OPTION HOMOGENEITY: All 5 options must be the same TYPE of answer. If the correct answer is a management action, all distractors must also be management actions. If the correct answer is a diagnosis, all distractors must be diagnoses. Never mix investigations with management steps, or regulations with clinical findings.
+19. ANTI-GIVEAWAY RULES:
+    - Do NOT use absolute language ("always", "never", "only") in distractors unless the correct answer also uses absolute language.
+    - Do NOT make the correct answer noticeably more specific, qualified, or hedged than the distractors.
+    - Do NOT include any option that a non-medical person could eliminate using common sense alone.
+    - Do NOT include options from clearly unrelated clinical domains (e.g., a cardiology intervention in a question about noise exposure).
+20. CLOSE-MISS DISTRACTORS: At least 3 of 4 distractors must be defensible as "almost correct" — a trainee who studied but has gaps should genuinely hesitate between the correct answer and at least 2 distractors. Test this by asking: "Would a competent ST3 registrar need to think carefully to eliminate this option?"
+21. CORRECT ANSWER POSITION: Distribute the correct answer position uniformly across A, B, C, D, and E across the question set. Do NOT cluster correct answers in positions B or C. In a set of 10 questions, each position should be correct approximately twice.
+22. STEM COMPLEXITY: Every stem must include at least TWO pieces of specific clinical data (e.g., exposure duration + measured level, symptom onset + occupation tenure, blood result + job role). Single-fact recall questions are not acceptable.
+23. SCENARIO DIVERSITY: Within each batch, vary the industry sector (healthcare, construction, manufacturing, office, transport, agriculture, mining, military, education, hospitality), worker demographics (age range 18-67, mix of genders), and presenting context (pre-employment, periodic surveillance, fitness-to-work review, incident investigation, ill-health referral, return-to-work assessment).`;
 }

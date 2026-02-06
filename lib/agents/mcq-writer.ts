@@ -8,6 +8,15 @@ const MIXED_PRACTICE_QUERIES = [
   'clinical assessment fitness to work occupational health',
   'workplace hazard exposure health surveillance regulations',
   'occupational disease diagnosis management treatment',
+  'return to work rehabilitation sickness absence workplace adjustments',
+  'pre-employment screening medical assessment occupational health',
+  'mental health stress workplace psychological risk assessment',
+  'respiratory surveillance occupational asthma lung function spirometry',
+  'blood lead levels biological monitoring hazardous substance exposure',
+  'night shift work health effects fatigue risk assessment',
+  'pregnant worker risk assessment workplace accommodations maternity',
+  'disability discrimination reasonable adjustments Equality Act',
+  'occupational cancer carcinogens exposure surveillance screening',
 ];
 
 const HSE_MIX_QUERIES = [
@@ -15,6 +24,14 @@ const HSE_MIX_QUERIES = [
   'noise vibration workplace control measures action levels',
   'asbestos lead ionising radiation occupational exposure standards',
   'RIDDOR reporting workplace injury disease regulations',
+  'workplace exposure limits WEL biological monitoring requirements',
+  'first aid at work regulations approved code of practice',
+  'management of health and safety risk assessment employer duties',
+  'personal protective equipment selection hierarchy of controls',
+  'control of asbestos regulations licensed removal medical surveillance',
+  'ionising radiation dose limits classified workers monitoring',
+  'lead at work blood lead suspension levels medical surveillance',
+  'noise action levels hearing protection zones audiometry',
 ];
 
 const TEXTBOOK_QUERIES = [
@@ -23,6 +40,13 @@ const TEXTBOOK_QUERIES = [
   'good occupational medical practice ethics professional conduct',
   'fitness for work medical aspects sickness absence rehabilitation return to work',
   'occupational health clinical management diagnosis treatment workplace',
+  'ill health retirement capability assessment pension medical evidence',
+  'consent confidentiality medical reports occupational health ethics',
+  'travel medicine vaccination fitness to travel occupational health',
+  'musculoskeletal disorders upper limb workplace ergonomic assessment',
+  'dermatology occupational skin disease contact dermatitis patch testing',
+  'alcohol drugs substance misuse workplace policy testing procedures',
+  'disability assessment functional capacity work restrictions adjustments',
 ];
 
 /** HSE regulation source_document values (from ingested PDFs) */
@@ -62,7 +86,7 @@ async function getMultiQueryContext(
     excludeDocuments?: string[];
   } = {}
 ): Promise<string> {
-  const { matchCount = 5, includeDocuments, excludeDocuments } = options;
+  const { matchCount = 8, includeDocuments, excludeDocuments } = options;
 
   const results = await Promise.all(
     queries.map((q) => retrieveContext(q, { matchCount, includeDocuments, excludeDocuments }))
@@ -81,9 +105,70 @@ async function getMultiQueryContext(
     }
   }
 
-  // Cap at ~12 chunks
-  return allChunks.slice(0, 12).join('\n---\n');
+  // Cap at ~20 chunks for broader source diversity
+  return allChunks.slice(0, 20).join('\n---\n');
 }
+
+/**
+ * Get the query bank and document filter for a given topic.
+ */
+function getQueryBankForTopic(topic: string): {
+  queries: string[];
+  includeDocuments?: string[];
+} {
+  switch (topic) {
+    case 'mixed-practice':
+      return { queries: MIXED_PRACTICE_QUERIES };
+    case 'hse-mix':
+      return { queries: HSE_MIX_QUERIES, includeDocuments: HSE_DOCUMENTS };
+    case 'textbook-only':
+      return { queries: TEXTBOOK_QUERIES, includeDocuments: TEXTBOOK_DOCUMENTS };
+    default:
+      return { queries: [] };
+  }
+}
+
+/**
+ * Get per-batch RAG context by splitting queries into non-overlapping subsets.
+ */
+async function getPerBatchContext(
+  topic: string,
+  batchIndex: number,
+  totalBatches: number
+): Promise<string> {
+  const { queries, includeDocuments } = getQueryBankForTopic(topic);
+
+  if (queries.length === 0) {
+    // Fallback for specific topics — single RAG query
+    return (await retrieveContext(topic, { matchCount: 12 })).contextText;
+  }
+
+  // Split queries into non-overlapping round-robin subsets
+  const subset = queries.filter((_, i) => i % totalBatches === batchIndex);
+  // Ensure at least 2 queries per batch for diversity
+  const finalSubset = subset.length >= 2
+    ? subset
+    : queries.slice(batchIndex * 2, batchIndex * 2 + 3).length > 0
+      ? queries.slice(batchIndex * 2, batchIndex * 2 + 3)
+      : queries.slice(0, 3);
+
+  return getMultiQueryContext(finalSubset, { includeDocuments });
+}
+
+/** OMST 2022 curriculum domains for batch rotation */
+const OMST_DOMAINS = [
+  'Professional values and behaviours',
+  'Communication with workers and employers',
+  'Clinical practice and fitness assessment',
+  'Workplace risk identification and management',
+  'Health promotion and illness prevention',
+  'Leadership and teamworking',
+  'Worker safety',
+  'Quality improvement',
+  'Safeguarding',
+  'Education and training',
+  'Research and evidence-based practice',
+];
 
 /** Max questions per single Gemini call */
 const BATCH_SIZE = 10;
@@ -91,17 +176,38 @@ const BATCH_SIZE = 10;
 /**
  * Build the user message for a given topic and count.
  */
-function buildUserMessage(topic: string, difficulty: string, count: number): string {
+function buildUserMessage(
+  topic: string,
+  difficulty: string,
+  count: number,
+  domainSubset?: string[],
+  exclusions?: string[]
+): string {
+  let base: string;
   switch (topic) {
     case 'mixed-practice':
-      return `Generate ${count} MCQ questions covering diverse occupational medicine topics at ${difficulty} level. Each question should test a different topic area.`;
+      base = `Generate ${count} MCQ questions covering diverse occupational medicine topics at ${difficulty} level. Each question should test a different topic area.`;
+      break;
     case 'hse-mix':
-      return `Generate ${count} MCQ questions drawn from HSE regulations and approved codes of practice at ${difficulty} level. Cover diverse HSE topics including COSHH, noise, vibration, asbestos, lead, ionising radiation, RIDDOR, and management of health and safety. Each question should reference specific regulation sections.`;
+      base = `Generate ${count} MCQ questions drawn from HSE regulations and approved codes of practice at ${difficulty} level. Cover diverse HSE topics including COSHH, noise, vibration, asbestos, lead, ionising radiation, RIDDOR, and management of health and safety. Each question should reference specific regulation sections.`;
+      break;
     case 'textbook-only':
-      return `Generate ${count} MCQ questions from clinical textbook material at ${difficulty} level. Focus on OMST curriculum learning outcomes, fitness to drive assessments, good occupational medical practice, and exam preparation topics. Do NOT include questions about specific HSE regulations.`;
+      base = `Generate ${count} MCQ questions from clinical textbook material at ${difficulty} level. Focus on OMST curriculum learning outcomes, fitness to drive assessments, good occupational medical practice, and exam preparation topics. Do NOT include questions about specific HSE regulations.`;
+      break;
     default:
-      return `Generate ${count} MCQ questions for the topic: "${topic}" at ${difficulty} level.`;
+      base = `Generate ${count} MCQ questions for the topic: "${topic}" at ${difficulty} level.`;
+      break;
   }
+
+  if (domainSubset && domainSubset.length > 0) {
+    base += `\n\nFocus on these OMST curriculum domains for this batch:\n${domainSubset.map((d, i) => `${i + 1}. ${d}`).join('\n')}\nEach question MUST map to one of these domains. Do NOT generate questions outside these domains.`;
+  }
+
+  if (exclusions && exclusions.length > 0) {
+    base += `\n\nIMPORTANT — The following scenarios have ALREADY been generated. Do NOT repeat or closely resemble any of them. Generate entirely different clinical scenarios, occupations, industries, and regulatory references:\n${exclusions.map((e) => `- ${e}`).join('\n')}`;
+  }
+
+  return base;
 }
 
 /**
@@ -111,53 +217,53 @@ async function generateBatch(
   systemPrompt: string,
   topic: string,
   difficulty: string,
-  count: number
+  count: number,
+  options?: { temperature?: number; domainSubset?: string[]; exclusions?: string[] }
 ): Promise<MCQQuestion[]> {
-  const userMessage = buildUserMessage(topic, difficulty, count);
+  const userMessage = buildUserMessage(topic, difficulty, count, options?.domainSubset, options?.exclusions);
   const result = await generateJSON<{ questions: MCQQuestion[] }>(
     systemPrompt,
     userMessage,
-    MCQQuestionsResponseSchema
+    MCQQuestionsResponseSchema,
+    { temperature: options?.temperature }
   );
   return result.questions;
 }
 
 /**
+ * Build a one-line exclusion summary from a question for cross-batch dedup.
+ */
+function summariseForExclusion(q: MCQQuestion): string {
+  // Extract occupation + topic + first 60 chars of stem as a fingerprint
+  const stemSnippet = q.stem.replace(/\n/g, ' ').slice(0, 80);
+  return `[${q.topic_tag}] ${stemSnippet}`;
+}
+
+/**
+ * Split OMST domains into round-robin subsets for batch rotation.
+ */
+function getDomainSubset(batchIndex: number, totalBatches: number): string[] {
+  return OMST_DOMAINS.filter((_, i) => i % totalBatches === batchIndex);
+}
+
+/**
  * MCQ Writer Agent
  * Generates multiple-choice questions for a given topic using RAG context.
- * For counts > BATCH_SIZE, splits into parallel batches.
+ * For counts > BATCH_SIZE, uses sequential batches with:
+ *   - Per-batch RAG diversity (different source chunks per batch)
+ *   - OMST domain rotation (different curriculum domains per batch)
+ *   - Cross-batch exclusion lists (avoids repeating scenarios)
+ *   - Temperature scaling (higher creativity for later batches)
  */
 export async function generateMCQs(
   topic: string,
   difficulty: string = 'DOccMed',
   count: number = 5
 ): Promise<MCQQuestion[]> {
-  // Retrieve relevant regulatory context via RAG (once, shared across batches)
-  let contextText: string;
-
-  switch (topic) {
-    case 'mixed-practice':
-      contextText = await getMultiQueryContext(MIXED_PRACTICE_QUERIES);
-      break;
-    case 'hse-mix':
-      contextText = await getMultiQueryContext(HSE_MIX_QUERIES, {
-        includeDocuments: HSE_DOCUMENTS,
-      });
-      break;
-    case 'textbook-only':
-      contextText = await getMultiQueryContext(TEXTBOOK_QUERIES, {
-        includeDocuments: TEXTBOOK_DOCUMENTS,
-      });
-      break;
-    default:
-      contextText = (await retrieveContext(topic, { matchCount: 8 })).contextText;
-      break;
-  }
-
-  const systemPrompt = getMCQWriterPrompt(contextText);
-
-  // For small counts, single call
+  // For small counts, single call with shared context
   if (count <= BATCH_SIZE) {
+    const contextText = await getSingleBatchContext(topic);
+    const systemPrompt = getMCQWriterPrompt(contextText);
     const questions = await generateBatch(systemPrompt, topic, difficulty, count);
     for (const q of questions) {
       if (!q.estimated_difficulty) q.estimated_difficulty = estimateDifficulty(q);
@@ -165,29 +271,63 @@ export async function generateMCQs(
     return questions;
   }
 
-  // For large counts, split into parallel batches of BATCH_SIZE
-  const batches: number[] = [];
+  // For large counts, sequential batches with diversity controls
+  const batchCounts: number[] = [];
   let remaining = count;
   while (remaining > 0) {
     const batchCount = Math.min(remaining, BATCH_SIZE);
-    batches.push(batchCount);
+    batchCounts.push(batchCount);
     remaining -= batchCount;
   }
 
-  const batchResults = await Promise.all(
-    batches.map((batchCount) =>
-      generateBatch(systemPrompt, topic, difficulty, batchCount)
-    )
-  );
+  const totalBatches = batchCounts.length;
+  const allQuestions: MCQQuestion[] = [];
+  const exclusions: string[] = [];
 
-  const allQuestions = batchResults.flat();
+  for (let i = 0; i < totalBatches; i++) {
+    // Per-batch RAG: each batch gets different source chunks
+    const contextText = await getPerBatchContext(topic, i, totalBatches);
+    const systemPrompt = getMCQWriterPrompt(contextText);
 
-  // Estimate difficulty for each question
-  for (const q of allQuestions) {
-    if (!q.estimated_difficulty) q.estimated_difficulty = estimateDifficulty(q);
+    // Domain rotation: each batch covers different OMST domains
+    const domainSubset = getDomainSubset(i, totalBatches);
+
+    // Temperature scaling: first batch at 0.7, subsequent at 0.85
+    const temperature = i === 0 ? 0.7 : 0.85;
+
+    const batchQuestions = await generateBatch(
+      systemPrompt,
+      topic,
+      difficulty,
+      batchCounts[i],
+      { temperature, domainSubset, exclusions: exclusions.length > 0 ? exclusions : undefined }
+    );
+
+    // Add to results and build exclusion list for next batch
+    for (const q of batchQuestions) {
+      if (!q.estimated_difficulty) q.estimated_difficulty = estimateDifficulty(q);
+      allQuestions.push(q);
+      exclusions.push(summariseForExclusion(q));
+    }
   }
 
   return allQuestions;
+}
+
+/**
+ * Get RAG context for single-batch generation (count <= BATCH_SIZE).
+ */
+async function getSingleBatchContext(topic: string): Promise<string> {
+  switch (topic) {
+    case 'mixed-practice':
+      return getMultiQueryContext(MIXED_PRACTICE_QUERIES);
+    case 'hse-mix':
+      return getMultiQueryContext(HSE_MIX_QUERIES, { includeDocuments: HSE_DOCUMENTS });
+    case 'textbook-only':
+      return getMultiQueryContext(TEXTBOOK_QUERIES, { includeDocuments: TEXTBOOK_DOCUMENTS });
+    default:
+      return (await retrieveContext(topic, { matchCount: 12 })).contextText;
+  }
 }
 
 function estimateDifficulty(q: MCQQuestion): string {
