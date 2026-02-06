@@ -81,58 +81,109 @@ async function getMultiQueryContext(
   return allChunks.slice(0, 12).join('\n---\n');
 }
 
+/** Max questions per single Gemini call */
+const BATCH_SIZE = 10;
+
+/**
+ * Build the user message for a given topic and count.
+ */
+function buildUserMessage(topic: string, difficulty: string, count: number): string {
+  switch (topic) {
+    case 'mixed-practice':
+      return `Generate ${count} MCQ questions covering diverse occupational medicine topics at ${difficulty} level. Each question should test a different topic area.`;
+    case 'hse-mix':
+      return `Generate ${count} MCQ questions drawn from HSE regulations and approved codes of practice at ${difficulty} level. Cover diverse HSE topics including COSHH, noise, vibration, asbestos, lead, ionising radiation, RIDDOR, and management of health and safety. Each question should reference specific regulation sections.`;
+    case 'textbook-only':
+      return `Generate ${count} MCQ questions from clinical textbook material at ${difficulty} level. Focus on OMST curriculum learning outcomes, fitness to drive assessments, good occupational medical practice, and exam preparation topics. Do NOT include questions about specific HSE regulations.`;
+    default:
+      return `Generate ${count} MCQ questions for the topic: "${topic}" at ${difficulty} level.`;
+  }
+}
+
+/**
+ * Generate a single batch of questions (up to BATCH_SIZE).
+ */
+async function generateBatch(
+  systemPrompt: string,
+  topic: string,
+  difficulty: string,
+  count: number
+): Promise<MCQQuestion[]> {
+  const userMessage = buildUserMessage(topic, difficulty, count);
+  const result = await generateJSON<{ questions: MCQQuestion[] }>(
+    systemPrompt,
+    userMessage,
+    MCQQuestionsResponseSchema
+  );
+  return result.questions;
+}
+
 /**
  * MCQ Writer Agent
  * Generates multiple-choice questions for a given topic using RAG context.
+ * For counts > BATCH_SIZE, splits into parallel batches.
  */
 export async function generateMCQs(
   topic: string,
   difficulty: string = 'DOccMed',
   count: number = 5
 ): Promise<MCQQuestion[]> {
-  // Retrieve relevant regulatory context via RAG
+  // Retrieve relevant regulatory context via RAG (once, shared across batches)
   let contextText: string;
-  let userMessage: string;
 
   switch (topic) {
     case 'mixed-practice':
       contextText = await getMultiQueryContext(MIXED_PRACTICE_QUERIES);
-      userMessage = `Generate ${count} MCQ questions covering diverse occupational medicine topics at ${difficulty} level. Each question should test a different topic area.`;
       break;
-
     case 'hse-mix':
       contextText = await getMultiQueryContext(HSE_MIX_QUERIES, {
         includeDocuments: HSE_DOCUMENTS,
       });
-      userMessage = `Generate ${count} MCQ questions drawn from HSE regulations and approved codes of practice at ${difficulty} level. Cover diverse HSE topics including COSHH, noise, vibration, asbestos, lead, ionising radiation, RIDDOR, and management of health and safety. Each question should reference specific regulation sections.`;
       break;
-
     case 'textbook-only':
       contextText = await getMultiQueryContext(TEXTBOOK_QUERIES, {
         includeDocuments: TEXTBOOK_DOCUMENTS,
       });
-      userMessage = `Generate ${count} MCQ questions from clinical textbook material at ${difficulty} level. Focus on OMST curriculum learning outcomes, fitness to drive assessments, good occupational medical practice, and exam preparation topics. Do NOT include questions about specific HSE regulations.`;
       break;
-
     default:
       contextText = (await retrieveContext(topic, { matchCount: 8 })).contextText;
-      userMessage = `Generate ${count} MCQ questions for the topic: "${topic}" at ${difficulty} level.`;
       break;
   }
 
-  // Build the system prompt with RAG context
   const systemPrompt = getMCQWriterPrompt(contextText);
 
-  // Generate questions JSON
-  const result = await generateJSON<{ questions: MCQQuestion[] }>(systemPrompt, userMessage, MCQQuestionsResponseSchema);
+  // For small counts, single call
+  if (count <= BATCH_SIZE) {
+    const questions = await generateBatch(systemPrompt, topic, difficulty, count);
+    for (const q of questions) {
+      if (!q.estimated_difficulty) q.estimated_difficulty = estimateDifficulty(q);
+    }
+    return questions;
+  }
+
+  // For large counts, split into parallel batches of BATCH_SIZE
+  const batches: number[] = [];
+  let remaining = count;
+  while (remaining > 0) {
+    const batchCount = Math.min(remaining, BATCH_SIZE);
+    batches.push(batchCount);
+    remaining -= batchCount;
+  }
+
+  const batchResults = await Promise.all(
+    batches.map((batchCount) =>
+      generateBatch(systemPrompt, topic, difficulty, batchCount)
+    )
+  );
+
+  const allQuestions = batchResults.flat();
 
   // Estimate difficulty for each question
-  for (const q of result.questions) {
-    if (!q.estimated_difficulty) {
-      q.estimated_difficulty = estimateDifficulty(q);
-    }
+  for (const q of allQuestions) {
+    if (!q.estimated_difficulty) q.estimated_difficulty = estimateDifficulty(q);
   }
-  return result.questions;
+
+  return allQuestions;
 }
 
 function estimateDifficulty(q: MCQQuestion): string {

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateQuestions } from '@/lib/services/mcq';
 import { mcqGenerateLimiter } from '@/lib/rate-limit';
 
+// Allow up to 60s for large question batches (Vercel default is 10s)
+export const maxDuration = 60;
+
 export async function POST(req: NextRequest) {
   try {
     const rateLimitResponse = mcqGenerateLimiter(req);
