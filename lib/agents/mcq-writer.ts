@@ -231,15 +231,6 @@ async function generateBatch(
 }
 
 /**
- * Build a one-line exclusion summary from a question for cross-batch dedup.
- */
-function summariseForExclusion(q: MCQQuestion): string {
-  // Extract occupation + topic + first 60 chars of stem as a fingerprint
-  const stemSnippet = q.stem.replace(/\n/g, ' ').slice(0, 80);
-  return `[${q.topic_tag}] ${stemSnippet}`;
-}
-
-/**
  * Split OMST domains into round-robin subsets for batch rotation.
  */
 function getDomainSubset(batchIndex: number, totalBatches: number): string[] {
@@ -249,10 +240,9 @@ function getDomainSubset(batchIndex: number, totalBatches: number): string[] {
 /**
  * MCQ Writer Agent
  * Generates multiple-choice questions for a given topic using RAG context.
- * For counts > BATCH_SIZE, uses sequential batches with:
+ * For counts > BATCH_SIZE, uses parallel batches with:
  *   - Per-batch RAG diversity (different source chunks per batch)
  *   - OMST domain rotation (different curriculum domains per batch)
- *   - Cross-batch exclusion lists (avoids repeating scenarios)
  *   - Temperature scaling (higher creativity for later batches)
  */
 export async function generateMCQs(
@@ -271,7 +261,7 @@ export async function generateMCQs(
     return questions;
   }
 
-  // For large counts, sequential batches with diversity controls
+  // For large counts, parallel batches with diversity controls
   const batchCounts: number[] = [];
   let remaining = count;
   while (remaining > 0) {
@@ -281,36 +271,29 @@ export async function generateMCQs(
   }
 
   const totalBatches = batchCounts.length;
-  const allQuestions: MCQQuestion[] = [];
-  const exclusions: string[] = [];
 
-  for (let i = 0; i < totalBatches; i++) {
-    // Per-batch RAG: each batch gets different source chunks
-    const contextText = await getPerBatchContext(topic, i, totalBatches);
-    const systemPrompt = getMCQWriterPrompt(contextText);
+  // Phase 1: Fetch all per-batch RAG contexts in parallel
+  const contexts = await Promise.all(
+    batchCounts.map((_, i) => getPerBatchContext(topic, i, totalBatches))
+  );
 
-    // Domain rotation: each batch covers different OMST domains
-    const domainSubset = getDomainSubset(i, totalBatches);
+  // Phase 2: Run all batch generations in parallel with unique context + domains + temperature
+  const batchResults = await Promise.all(
+    batchCounts.map((batchCount, i) => {
+      const systemPrompt = getMCQWriterPrompt(contexts[i]);
+      const domainSubset = getDomainSubset(i, totalBatches);
+      const temperature = i === 0 ? 0.7 : 0.85;
+      return generateBatch(systemPrompt, topic, difficulty, batchCount, {
+        temperature,
+        domainSubset,
+      });
+    })
+  );
 
-    // Temperature scaling: first batch at 0.7, subsequent at 0.85
-    const temperature = i === 0 ? 0.7 : 0.85;
-
-    const batchQuestions = await generateBatch(
-      systemPrompt,
-      topic,
-      difficulty,
-      batchCounts[i],
-      { temperature, domainSubset, exclusions: exclusions.length > 0 ? exclusions : undefined }
-    );
-
-    // Add to results and build exclusion list for next batch
-    for (const q of batchQuestions) {
-      if (!q.estimated_difficulty) q.estimated_difficulty = estimateDifficulty(q);
-      allQuestions.push(q);
-      exclusions.push(summariseForExclusion(q));
-    }
+  const allQuestions = batchResults.flat();
+  for (const q of allQuestions) {
+    if (!q.estimated_difficulty) q.estimated_difficulty = estimateDifficulty(q);
   }
-
   return allQuestions;
 }
 
