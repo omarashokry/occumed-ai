@@ -73,32 +73,42 @@ export function McqTopicSelector({
         </p>
       </div>
 
-      {/* Mixed Practice card (full-width, above grid) */}
-      {!isFetching && topics.length > 0 && topics[0].id === "mixed-practice" && (
-        <button
-          onClick={() => setSelected("mixed-practice")}
-          disabled={isStarting}
-          aria-label="Select Mixed Practice"
-          className={`w-full text-left rounded-lg border-2 border-dashed p-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/40 ${
-            selected === "mixed-practice"
-              ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-              : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-blue-400 dark:hover:border-blue-600"
-          } disabled:opacity-50`}
-        >
-          <h3 className="font-semibold text-sm mb-1">{topics[0].name}</h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-            {topics[0].description}
-          </p>
-          <p className="text-xs text-blue-600 dark:text-blue-400">
-            {topics[0].regulations.join(", ")}
-          </p>
-        </button>
-      )}
+      {/* Special topic cards (full-width, above grid) */}
+      {!isFetching && (() => {
+        const specialIds = new Set(["mixed-practice", "hse-mix", "textbook-only"]);
+        const specialTopics = topics.filter((t) => specialIds.has(t.id));
+        if (specialTopics.length === 0) return null;
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {specialTopics.map((topic) => (
+              <button
+                key={topic.id}
+                onClick={() => setSelected(topic.id)}
+                disabled={isStarting}
+                aria-label={`Select ${topic.name}`}
+                className={`text-left rounded-lg border-2 border-dashed p-5 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/40 ${
+                  selected === topic.id
+                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                    : "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-blue-400 dark:hover:border-blue-600"
+                } disabled:opacity-50`}
+              >
+                <h3 className="font-semibold text-sm mb-1">{topic.name}</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                  {topic.description}
+                </p>
+                <p className="text-xs text-blue-600 dark:text-blue-400">
+                  {topic.regulations.join(", ")}
+                </p>
+              </button>
+            ))}
+          </div>
+        );
+      })()}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {isFetching
           ? Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)
-          : topics.filter((t) => t.id !== "mixed-practice").map((topic) => (
+          : topics.filter((t) => !["mixed-practice", "hse-mix", "textbook-only"].includes(t.id)).map((topic) => (
               <button
                 key={topic.id}
                 onClick={() => setSelected(topic.id)}
@@ -129,13 +139,13 @@ export function McqTopicSelector({
               Questions:
             </span>
             <div className="flex rounded-md overflow-hidden border border-gray-200 dark:border-gray-700">
-              {[5, 10].map((n) => (
+              {[5, 10, 20, 30, 50].map((n) => (
                 <button
                   key={n}
                   onClick={() => setCount(n)}
                   disabled={isStarting}
                   aria-label={`${n} questions`}
-                  className={`px-4 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/40 ${
+                  className={`px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/40 ${
                     count === n
                       ? "bg-blue-600 text-white"
                       : "bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"

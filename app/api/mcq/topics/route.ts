@@ -8,6 +8,18 @@ const MCQ_TOPICS = [
     regulations: ['All regulations'],
   },
   {
+    id: 'hse-mix',
+    name: 'HSE Regulations Mix',
+    description: 'Questions drawn from all HSE regulation documents combined',
+    regulations: ['L5', 'L108', 'L24', 'L74', 'L132', 'L140', 'RIDDOR', 'Asbestos', 'Ionising Radiations', 'Management Regs'],
+  },
+  {
+    id: 'textbook-only',
+    name: 'Textbook & Clinical',
+    description: 'Clinical practice, fitness assessments, and exam prep — no HSE regulations',
+    regulations: ['OMST 2022', 'GOMP 2017', 'DVLA Fitness to Drive', 'DOccMed Examples', 'MFOM Regs'],
+  },
+  {
     id: 'noise-induced-hearing-loss',
     name: 'Noise-Induced Hearing Loss',
     description: 'Assessment and management of occupational noise exposure',

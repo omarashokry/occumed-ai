@@ -17,9 +17,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (count !== undefined && (count < 1 || count > 10)) {
+    if (count !== undefined && (count < 1 || count > 50)) {
       return NextResponse.json(
-        { error: 'Count must be between 1 and 10' },
+        { error: 'Count must be between 1 and 50' },
         { status: 400 }
       );
     }
